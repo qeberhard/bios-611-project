@@ -1,0 +1,34 @@
+---
+title: "K-562 Transcriptomic Analysis"
+author: "Quinn Eberhard"
+date: "2022-10-24"
+output: html_document
+---
+
+The data we have here is a matrix of floats resulting from running the bioinformatics algorithm known as SEEKR from Dr. Mauro Calabrese's lab here at UNC. SEEKR is an alternative to traditional linear alignment that allows similarity between long non-coding RNAs to be detected. If this is new to you, perhaps look at the `README.txt` file first.
+
+The data being processed here is the `5mers_expressed_txpts.csv` file. This contains the SEEKR results for the entire transcriptome of K562 cells. Although I have my own hypotheses to examine later, I wanted to first take an unbaised approach to visualizing this dataset.
+
+
+As you can see, in each row we have an RNA from the transcriptome. Each column is labeled by a specific motif of five nucleotides, and the corresponding matrix value is the proportion of the time that the particular motif appears in the RNA sequence, standardized by the total sequence length.
+
+To first begin visualization, I want to focus on just a single motif. Let's try the ACACA motif. This dinucleotide repeat is one of the most common motifs in humans, so it may be interesting to see if this is more specific to certain RNAs.
+
+![ Occurrences of the ACACA motif across the K-562 transcriptome ](figures/ACACA_motif_txptome.png)
+
+
+Evidently, there are quite a few RNAs that do not exhibit this particular motif at all. Let's select only those RNAs that highly express this motif.
+
+![ Occurrences of ACACA motif across K-562 transcripts which highly express the motif ](figures/ACACA_motif_expressed.png)
+
+Looking at these top RNAs, we may be able to learn something about the association between this motif and chromosomal positions. To split the long RNA names into more immediately useful information, we can extract the RNA name, chromosome, start and stop positions, strand, and transcript name. As this dataset also includes an unspliced version of each transcript, we can also store this information.
+
+
+We see that about ~51% of the transcripts are the unspliced version. This seems like it could be something to look into further:
+
+Only 28% of the transcriptome consists of unspliced transcripts. This indicates that there is a significant upregulation in the number of unspliced transcripts containing the ACACA motif; however, this may be an artifact of the increased length seen in the unspliced transcripts compared to the spliced versions.
+
+In a future experiment, let's see for each motif whether the unspliced transcripts appear more often than we would expect given the prevalence in the transcriptome.
+
+For another investigation, let's compare a series of transcripts for the gene XIST. XIST is a lncRNA involved in repression of the entire X chromosome during early placental development of mammals. It has been well-studied by RNA biologists and is one of my one of the lncRNAs I am most interested in.
+
