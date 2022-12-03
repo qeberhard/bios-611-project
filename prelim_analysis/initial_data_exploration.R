@@ -2,6 +2,25 @@ library(ggplot2)
 library(stringr)
 library(readr)
 
+#read in data
+pre.filtered <- read.csv("source_data/K562_expressed_tpms.tsv", sep="\t")
+averaged.tpms <- read.csv("source_data/K562_averaged_table.tsv", sep="\t")
+
+#visualize the expression of the averaged.tpms
+png("figures/total_transcriptome_expression_initial.png")
+ggplot(averaged.tpms, aes(x=K562_averaged_total)) + geom_histogram(binwidth = 0.5)
+dev.off()
+
+#But when we zoom in...
+png("figures/total_transcript_expression_initial_zoomed.png")
+ggplot(averaged.tpms, aes(x=K562_averaged_total)) + geom_histogram(binwidth=0.5) + ylim(0,50)
+dev.off()
+stop()
+
+#png("figures/ACACA_motif_txptome.png")
+#ggplot(txptome, aes(x=ACACA)) + geom_histogram(binwidth=0.05)
+#dev.off()
+
 
 #read in data
 txptome1 <- read_csv("source_data/5mers_expressed_txpts_1.csv.gz")

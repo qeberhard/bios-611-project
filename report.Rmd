@@ -1,25 +1,44 @@
 ---
 title: "K-562 Transcriptomic Analysis"
 author: "Quinn Eberhard"
-date: "2022-10-24"
+
 output: html_document
+header-includes:
+ \usepackage{wrapfig}
+ \usepackage{float}
+ \floatplacement{figure}{H}
 ---
 
-The data we have here is a matrix of floats resulting from running the bioinformatics algorithm known as SEEKR from Dr. Mauro Calabrese's lab here at UNC. SEEKR is an alternative to traditional linear alignment that allows similarity between long non-coding RNAs to be detected. If this is new to you, perhaps look at the `README.txt` file first.
-
-The data being processed here is the `5mers_expressed_txpts.csv` file. This contains the SEEKR results for the entire transcriptome of K562 cells. Although I have my own hypotheses to examine later, I wanted to first take an unbaised approach to visualizing this dataset.
+#Abstract
 
 
-As you can see, in each row we have an RNA from the transcriptome. Each column is labeled by a specific motif of five nucleotides, and the corresponding matrix value is the proportion of the time that the particular motif appears in the RNA sequence, standardized by the total sequence length.
+
+
+
+#Introduction
+
+RNAs can play many crucial roles in the cell. Messenger RNAs (mRNAs) code for proteins which go on to have a variety of different functions - x, y, and z to name a few. Then there are non-coding RNAs (ncRNAs) that do not develop proteins but rather form RNA interactions with other entities such as DNA or proteins. Non-coding RNAs frequently regulate transcription, translation, and chromatin scaffolding, and can form important complexes such as the ribosome. It is generally recognized that RNA expression varies between different cell types and health conditions, and understanding both the source and direct implications of this variation can better inform both prevention and treatment of illnesses. But what makes the RNA sequences so different from one another in the first place can be difficult to state. RNAs are formed from just four nucleotides: Adenine, Cytosine, Guanine, and unique to RNAs, Uracil, "ACGU". This allows only a limited amount of variation compared to proteins, which have twenty common amino acids and up to sixty potential alternatives. Narrowed variation in RNA sequences makes the wide range of potential functions even more curious of a phenomenon.
+
+Previous study of RNA sequences has led to the development of RNA sequence alignments, originally developed to compare the extent of evolutionary history shared between DNA sequences, similar evaluation can be extended to RNA sequences stemming from evolutionarily related DNA sequences. However, not all RNAs come from evolutionarily conserved regions of DNA, and this is particularly observed with long non-coding RNAs (lncRNAs, ncRNAs that are longer than 200 nucleotides). When linearly aligned, two lncRNAs may show very low similarity even when they have been identified experimentally to have very similar functions. So function is not being developed through sequence linearity, and to address this Dr. Mauro Calabrese's lab at UNC developed SEEKR, the *SEquence Evaluation from Kmer Representation* algorithm. This technique essentially breaks sequences up into segments of length *k*, called *k*-mers. These sequence fragments are then compared to the sequence fragments of another sequence, yielding a significant result that correlates to the similarity we would expect to see between functionally similar sequences.
+
+
+#Methods
+
+##Unspliced Expression Analysis
+
+For each gene in the total GRCh38.p13 transcriptome, I manually added in one unspliced transcript. Some genes already had a designated unspliced transcript and these were removed to prevent duplication and allow for consistant identfication of the unspliced transcripts. The final transcriptome consists of 28% unspliced transcripts and 72% spliced transcripts. 
+Describe alignment, map ratios of unspliced > than spliced (combined). How many reads actually align to unspliced total vs spliced total?
+
+Looking at a single common motif (say, ACACA, and then another motif that shows some lncRNA significance)
 
 To first begin visualization, I want to focus on just a single motif. Let's try the ACACA motif. This dinucleotide repeat is one of the most common motifs in humans, so it may be interesting to see if this is more specific to certain RNAs.
 
 ![ Occurrences of the ACACA motif across the K-562 transcriptome ](figures/ACACA_motif_txptome.png)
 
-
 Evidently, there are quite a few RNAs that do not exhibit this particular motif at all. Let's select only those RNAs that highly express this motif.
 
 ![ Occurrences of ACACA motif across K-562 transcripts which highly express the motif ](figures/ACACA_motif_expressed.png)
+
 
 Looking at these top RNAs, we may be able to learn something about the association between this motif and chromosomal positions. To split the long RNA names into more immediately useful information, we can extract the RNA name, chromosome, start and stop positions, strand, and transcript name. As this dataset also includes an unspliced version of each transcript, we can also store this information.
 
@@ -30,5 +49,40 @@ Only 28% of the transcriptome consists of unspliced transcripts. This indicates 
 
 In a future experiment, let's see for each motif whether the unspliced transcripts appear more often than we would expect given the prevalence in the transcriptome.
 
-For another investigation, let's compare a series of transcripts for the gene XIST. XIST is a lncRNA involved in repression of the entire X chromosome during early placental development of mammals. It has been well-studied by RNA biologists and is one of my one of the lncRNAs I am most interested in.
+##*k*-mer Analysis
+
+
+
+For another investigation, let's compare a series of transcripts for the gene XIST. XIST is a lncRNA involved in repression of the entire X chromosome during early placental development of mammals. It has been well-studied by RNA biologists and is one of the lncRNAs I am most interested in.
+
+
+
+#Results
+
+The final results of the kmeans clustering analysis can be seen in Figure !!!. 
+
+
+
+
+
+
+#Discussion
+
+
+
+#Conclusion
+
+
+#References
+
+
+
+
+
+
+
+
+
+
+
 
