@@ -14,10 +14,6 @@ ggplot(averaged.tpm, aes(x=K562_averaged_total)) +
 dev.off()
 
 minimum.expressed <- subset(averaged.tpm, (averaged.tpm$K562_averaged_total > 0))
-#But when we zoom in...
-#png("figures/total_transcript_expression_initial_zoomed.png")
-#ggplot(averaged.counts, aes(x=K562_averaged_total)) + geom_histogram(color = "black", fill="lightblue", bins = 5000, binwidth=250) + ylim(0,15)
-#dev.off()
 
 #A common cutoff is a TPM of 0.25
 log.threshold <- log(1.25)
@@ -33,6 +29,8 @@ dev.off()
 
 expressed.tpm <- subset(minimum.expressed, (minimum.expressed$K562_averaged_total >= 0.25))
 not.expressed.tpm <- subset(averaged.tpm, !(averaged.tpm$K562_averaged_total >= 0.25))
+write.csv(expressed.tpm, "derived_data/expressed_tpm_txptome.csv")
+
 
 # Which genes are not expressed vs. which are?
 # with regards to spliced vs. unspliced:
