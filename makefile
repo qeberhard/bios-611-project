@@ -17,7 +17,7 @@ figures/total_transcriptome_expression_initial.png\
  figures/splicing_diff_expressed.png:\
   source_data/K562_averaged_table.tsv\
   .created-dirs
-  	Rscript prelim_analysis/total_rnaseq_expression.R
+	Rscript prelim_analysis/total_rnaseq_expression.R
 
 
 #k-mer analysis
@@ -38,7 +38,7 @@ derived_data/unspliced_txptome.csv\
   source_data/5mers_expressed_txpts_2.csv.gz\
   source_data/gencode.v39.basic.annotation.gtf.gz\
   .created-dirs
-  	Rscript prelim_analysis/initial_kmer_analysis.R
+	Rscript prelim_analysis/initial_kmer_analysis.R
 
 report.pdf: source_data/K562_averaged_table.tsv\
  figures/total_transcriptome_expression_initial.png\
