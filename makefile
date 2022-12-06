@@ -23,11 +23,16 @@ figures/total_transcriptome_expression_initial.png\
 #k-mer analysis
 derived_data/unspliced_txptome.csv\
  derived_data/expressed_kmers_txptome.csv\
- derived_data/top_10_xist_5mers.csv\
- derived_data/top_10_xact_5mers.csv\
- derived_data/top_10_kcnq1ot1_5mers.csv\
- derived_data/top_10_neat1_5mers.csv\
- derived_data/top_10_malat1_5mers.csv:\
+ figures/neat1_5mer_expression.png\
+ figures/malat1_5mer_expression.png\
+ figures/kcnq1ot1_5mer_expression.png\
+ figures/xact_5mer_expression.png\
+ figures/xist_5mer_expression.png\
+ figures/neat1_expressed_transcripts.png\
+ figures/malat1_expressed_transcripts.png\
+ figures/kcnq1ot1_expressed_transcripts.png\
+ figures/xact_expressed_transcripts.png\
+ figures/xist_expressed_transcripts.png:\
   derived_data/expressed_tpm_txptome.csv\
   source_data/5mers_expressed_txpts_1.csv.gz\
   source_data/5mers_expressed_txpts_2.csv.gz\
@@ -41,10 +46,15 @@ report.pdf: source_data/K562_averaged_table.tsv\
  figures/splicing_diff_expressed.png\
  derived_data/expressed_kmers_txptome.csv\
  derived_data/expressed_tpm_txptome.csv\
- derived_data/top_10_xist_5mers.csv\
- derived_data/top_10_xact_5mers.csv
- derived_data/top_10_kcnq1ot1_5mers.csv\
- derived_data/top_10_malat1_5mers.csv\
- derived_data/top_10_neat1_5mers.csv\
+ figures/neat1_5mer_expression.png\
+ figures/malat1_5mer_expression.png\
+ figures/kcnq1ot1_5mer_expression.png\
+ figures/xact_5mer_expression.png\
+ figures/xist_5mer_expression.png\
+ figures/neat1_expressed_transcripts.png\
+ figures/malat1_expressed_transcripts.png\
+ figures/kcnq1ot1_expressed_transcripts.png\
+ figures/xact_expressed_transcripts.png\
+ figures/xist_expressed_transcripts.png\
  figures/nucleotide_components_kmers.png
 	R -e "rmarkdown::render(\"report.Rmd\", output_format=\"pdf_document\")"

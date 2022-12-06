@@ -9,80 +9,132 @@ header-includes:
  \floatplacement{figure}{H}
 ---
 
-#Abstract
+# Introduction
+
+RNAs can play many different roles in the cell. Messenger RNAs (mRNAs) code for proteins which go on to have an even wider variety of functions, but mRNAs themselves usually do not serve a function beyond encoding the proteins 'recipe'. Then there are non-coding RNAs (ncRNAs), that do not develop proteins but rather form RNA interactions with other entities such as DNA or proteins. Non-coding RNAs frequently regulate transcription, translation, and chromatin scaffolding, and can form important complexes such as the ribosome. It is generally recognized that RNA expression varies between different cell types and health conditions, and understanding both the source and direct implications of this variation can better inform both prevention and treatment of illnesses. But what makes the RNA sequences so different from one another in the first place can be difficult to state. RNAs are formed from just four nucleotides: Adenine, Cytosine, Guanine, and unique to RNAs, Uracil, "ACGU". This allows only a limited amount of variation compared to proteins, which have twenty common amino acids and up to sixty potential alternatives. Narrowed variation in RNA sequences makes the wide range of potential functions even more curious of a phenomenon.
+
+Previous study of RNA sequences has led to the development of sequence alignments, originally developed to compare the extent of evolutionary history shared between DNA sequences, similar evaluation can be extended to RNA sequences stemming from evolutionarily related DNA sequences. However, not all RNAs come from evolutionarily conserved regions of DNA, and this is particularly observed with long non-coding RNAs (lncRNAs, ncRNAs that are longer than 200 nucleotides). When linearly aligned, two lncRNAs may show very low similarity even when they have been identified experimentally to have very similar functions. So if function is not being developed through sequence linearity, then something else must be driving it.To address this, Dr. Mauro Calabrese's lab at UNC developed SEEKR: the *SEquence Evaluation from Kmer Representation* algorithm. This technique essentially breaks sequences up into segments of length *k*, called *k*-mers. These sequence fragments are then compared to the sequence fragments of another sequence, yielding a significant result that correlates to the similarity we would expect to see between functionally similar sequences.
+
+In this report, I investigate which RNAs are expressed in the K562 cell line and what the *k*-mer content of those RNAs are. The importance including unspliced transcripts is also evaluated, as well as which motifs are the most common among several lncRNAs with similar functions.
+
+# Methods and Results
+
+### Filtering by Sequence Expression
+
+One of the fundamentals to consider in transcriptomic analysis is that not every documented gene in the human genome will be expressed in every cell. This varies between the person, the cell type, their sex, age, and other factors including disease. One way to identify the abundance of transcripts is to run a sequence alignment to the genome, and then quantify the results. Sequencing experiments obtain fragments of transcripts present in a cell, and these complex molecular fragments can be read into alphabetical sequences (usually based in the DNA "ATGC" nucleotides rather than the RNA "AUGC"). These sequences are then able to be traced back to the genomic annotations and the genes they are derived from can be identified. 
+
+The sequence mappings would allow us to determine which genes are represented in the K562 cell line. However, this mapping process is imperfect and fragments can be misaligned to the wrong gene or be aligned to multiple different genes. To help protect against this, we can screen for expression and determine an expression threshold above which we accept that the transcripts are genuinely present in the cell. The data here is calculated by the Transcripts Per Million (TPM), meaning that for every million transcripts sequenced, the particular gene makes up a certain number of those transcripts. This value is the assigned TPM:
+
+```{r}
+K562.avgs <- read.csv("source_data/K562_averaged_table.tsv", sep="\t")
+head(K562.avgs[,1:2])
+tail(K562.avgs[,1:2])
+```
+
+You can see from the head() of the dataframe that not all genes appear to be expressed, while some shown in the tail() are. Determining what point we should consider a gene expressed will be one of the first things to explore. An initial plot of the gene TPM reveals a dense cluster of genes with counts around zero, with a few standing outliers towards the right tail of the plot.
+
+```{r, fig.align = 'center', out.width = "45%", fig.cap = "Histogram of Gene Alignments in K-562 Total RNAseq"}
+knitr::include_graphics(here::here("figures", "total_transcriptome_expression_initial.png"))
+```
+
+The genes with a TPM of exactly zero are generally not considered to be expressed, as the transcripts do not occur out of every million that are sequenced. To better determine the expression, the values were log transformed and +1 was added to avoid any log errors for TPMs of 0. A common threshold of expression is about 0.25 TPM, so log(0.25+1) is marked on the plot with a dashed line to see if this visually appears to be an acceptable TPM cutoff.
+
+```{r, fig.align = 'center', out.width = "45%", fig.cap = "Histogram of log transformed Gene Counts in K-562 Total RNASeq"}
+knitr::include_graphics(here::here("figures", "log_transcript_threshold_expression.png"))
+```
+Given that this cutoff appears to remove the many genes that are not expressed without removing data that is likely expressed in the upstream tail of the distribution. These genes are retained for further analysis throughout the rest of this exploration. 
+
+After the expression threshold is set, the data is separated into two categories: expressed and not expressed. Given the original dataset already contained two types of transcripts, spliced and unspliced, it may be interesting to see what happened to that distribution.
+
+### Unspliced Gene Expression Analysis
+
+A process called *splicing* is responsible for how so many different gene products can be made from a condensed series of chromosomes. The human genome is between 20,000 to 25,000 genes total, and takes up approximately 3.2 billion nucleotides in total length. However, closer to 140,000 different gene products have been documented in the form of transcripts. Transcripts occur when a gene is transcribed by an RNA polymerase, copying DNA information into RNA nucleotides forming an RNA strand. This strand can then be 'spliced' when portions of the RNA are removed, and the remaining pieces are re-annealed. This can happen for a single RNA strand in a variety of different ways which is called *alternative splicing*. This process results in the large variety of gene products, called transcripts, that number far greater than the number of actual genes - a very efficient process for conserving biochemical energy.
+
+However, splicing does not always occur in RNA. Many transcripts may go unspliced, and some of these are documented in Gene transfer files, or GTF files, which are how the genes of a genome can be annotated and later identified from sequencing data. There are only a few RNA transcripts documented to have unspliced variants, though I suspected there are many more particularly with regards to lncRNAs. Some lncRNAs have been documented to undergo splicing while others do not, even though they do not go on to produce proteins which was once believed to be the main motivation for splicing in biology.  
+
+To account for this, I added in one unspliced transcript for each gene in the human genome to the main GTF. Some genes already had a designated unspliced transcript and these were removed to prevent duplication and allow for consistant identfication of the unspliced transcripts. The final transcriptome consists of ~40% unspliced transcripts and ~60% spliced transcripts. 
+
+First, the number of unspliced transcripts was summed for the original unfiltered data set, the unexpressed data set, and the expressed dataset. Those results are shown below, and we can clearly see that the vast majority of the annotated genes do not reach a signficant splicing threshold and are thus unexpressed. Of these, a disproportionate amount are `unspliced` transcripts. Interestingly, there around thousandsd of unspliced transcripts that *are* expressed. This appears to support the inclusion of unspliced transcripts for genes as several thousand are expressed and would otherwise be mismapped or thrown out altogether during the alignment process. Further analysis into which unspliced transcripts these are would be beneificial to inform how many of these are previously annotated, but falls in bioinformatics beyond the scope of this project.
+
+```{r, fig.align = 'center', out.width = "45%", fig.cap = "Barchart of Gene Count by Filtered Spliced Types"}
+knitr::include_graphics(here::here("figures", "splicing_diff_expressed.png"))
+```
+
+We can see that the unspliced transcripts are generally less than the number of spliced transcripts in all forms of expression and the original dataset.
+
+### *k*-mer Expression Analysis
+
+With the SEEKR output data, we can filter out the transcripts that were not expressed from the total RNAseq experiment. 
+
+```{r}
+expressed_kmers_txptome <- read.csv('derived_data/expressed_kmers_txptome.csv')
+head(expressed_kmers_txptome[,1:10])
+```
+
+In order to compare the *k*-mer profiles of XIST and XACT, we must first identify which of the XIST and XACT transcripts are most highly expressed. Referencing the `expressed_kmers_txptome.csv` file, we can identify which XIST transcripts are expressed beyond our 0.25 TPM threshold and then select the transcript with the highest expression value.
+
+```{r, fig.align = 'center', out.width = "45%", fig.cap = "XIST transcript expression"}
+knitr::include_graphics(here::here("figures", "xist_expressed_transcripts.png"))
+```
+
+The same can be done for XACT:
+```{r, fig.align = 'center', out.width = "45%", fig.cap = "XACT transcript expression"}
+knitr::include_graphics(here::here("figures", "xact_expressed_transcripts.png"))
+```
+
+From this, we see that the `XIST_chrX_73820656_73852723_-_ENST00000429829.6` and `XACT_chrX_113616300_114059121_-_ENST00000468762.3` transcripts are the predominantly expressed forms of XIST and XACT. We can compare the *k*-mer profiles of these two RNAs to determine what the main similarities or differences in *k*-mer motifs are between them.
+
+```{r, fig.align = 'center', out.width = "45%", fig.cap = "XIST 5-mer expression"}
+knitr::include_graphics(here::here("figures", "xist_5mer_expression.png"))
+```
+Based on the top ten 5-mers expressed for XIST, we notice that they are incredibly T-rich (~54% of nucleotides are T's). 
+```{r, fig.align = 'center', out.width = "45%", fig.cap = "XACT 5-mer expression"}
+knitr::include_graphics(here::here("figures", "xact_5mer_expression.png"))
+```
+
+For XACT they are incredibly A-rich (~52% of nucleotides are A's).
 
 
+Next, we can compare the *k*-mer profiles of KCNQ1OT1 and XIST, as both are repressive in function and may have more similarity in their motif content.
+```{r, fig.align = 'center', out.width = "45%", fig.cap = "KCNQ1OT1 transcript expression"}
+knitr::include_graphics(here::here("figures", "kcnq1ot1_expressed_transcripts.png"))
+```
+Only one transcript of KCNQ1OT1 is expressed, and it is the unspliced transcript.
 
+```{r, fig.align = 'center', out.width = "45%", fig.cap = "KCNQ1OT1 5-mer expression"}
+knitr::include_graphics(here::here("figures", "kcnq1ot1_5mer_expression.png"))
+```
+We see that when compared to XIST, KCNQ1OT1 has considerable preference to Adenine, like XACT, rather than Thymine, like XIST.
 
+Finally, we compare the *k*-mer preferences of NEAT1 and MALAT1, both lncRNAs that have been linked to the formation and maintenance of speckles (dense regions of upregulated transcription in cells):
 
-#Introduction
+```{r, fig.align = 'center', out.width = "45%", fig.cap = "NEAT1 transcript expression"}
+knitr::include_graphics(here::here("figures", "neat1_expressed_transcripts.png"))
+```
+```{r, fig.align = 'center', out.width = "45%", fig.cap = "MALAT1 transcript expression"}
+knitr::include_graphics(here::here("figures", "malat1_expressed_transcripts.png"))
+```
 
-RNAs can play many crucial roles in the cell. Messenger RNAs (mRNAs) code for proteins which go on to have a variety of different functions - x, y, and z to name a few. Then there are non-coding RNAs (ncRNAs) that do not develop proteins but rather form RNA interactions with other entities such as DNA or proteins. Non-coding RNAs frequently regulate transcription, translation, and chromatin scaffolding, and can form important complexes such as the ribosome. It is generally recognized that RNA expression varies between different cell types and health conditions, and understanding both the source and direct implications of this variation can better inform both prevention and treatment of illnesses. But what makes the RNA sequences so different from one another in the first place can be difficult to state. RNAs are formed from just four nucleotides: Adenine, Cytosine, Guanine, and unique to RNAs, Uracil, "ACGU". This allows only a limited amount of variation compared to proteins, which have twenty common amino acids and up to sixty potential alternatives. Narrowed variation in RNA sequences makes the wide range of potential functions even more curious of a phenomenon.
+```{r, fig.align = 'center', out.width = "45%", fig.cap = "NEAT1 5-mer expression"}
+knitr::include_graphics(here::here("figures", "neat1_5mer_expression.png"))
+```
 
-Previous study of RNA sequences has led to the development of RNA sequence alignments, originally developed to compare the extent of evolutionary history shared between DNA sequences, similar evaluation can be extended to RNA sequences stemming from evolutionarily related DNA sequences. However, not all RNAs come from evolutionarily conserved regions of DNA, and this is particularly observed with long non-coding RNAs (lncRNAs, ncRNAs that are longer than 200 nucleotides). When linearly aligned, two lncRNAs may show very low similarity even when they have been identified experimentally to have very similar functions. So function is not being developed through sequence linearity, and to address this Dr. Mauro Calabrese's lab at UNC developed SEEKR, the *SEquence Evaluation from Kmer Representation* algorithm. This technique essentially breaks sequences up into segments of length *k*, called *k*-mers. These sequence fragments are then compared to the sequence fragments of another sequence, yielding a significant result that correlates to the similarity we would expect to see between functionally similar sequences.
+```{r, fig.align = 'center', out.width = "45%", fig.cap = "MALAT1 5-mer expression"}
+knitr::include_graphics(here::here("figures", "malat1_5mer_expression.png"))
+```
 
+All of the nucleotide compositions can be compared in a stacked barplot:
 
-#Methods
+```{r, fig.align = 'center', out.width = "45%", fig.cap = "Nucleotide Composition of Top 5-mers"}
+knitr::include_graphics(here::here("figures", "nucleotide_components_kmers.png"))
+```
 
-##Unspliced Expression Analysis
+# Discussion & Conclusions
 
-For each gene in the total GRCh38.p13 transcriptome, I manually added in one unspliced transcript. Some genes already had a designated unspliced transcript and these were removed to prevent duplication and allow for consistant identfication of the unspliced transcripts. The final transcriptome consists of 28% unspliced transcripts and 72% spliced transcripts. 
-Describe alignment, map ratios of unspliced > than spliced (combined). How many reads actually align to unspliced total vs spliced total?
+The filtration was a relatively routine procedure and the approximate 37,000 RNAs that were expressed is not surprising. It would potentially be worth returning to for further analysis when compared to another cell type, just to illustrate the differences between different cell/tissue types. The unspliced gene expression analysis, however, did yield some surprising results. Although the majority of transcripts were spliced, there are still thousands of transcripts that *are* expressed in K562 that are unspliced. It would be ineresting to see if all expressed unspliced RNAs had already been included in the GTF file and how many were only detected due to adding in more unspliced transcripts.
 
-Looking at a single common motif (say, ACACA, and then another motif that shows some lncRNA significance)
+As for the *k*-mers, XIST and XACT are lncRNAs with potentially "opposite" functions; XIST is involved in the repression of the additional X chromosome in female placental mammals while XACT is involved with the activation of the other X chromosome. Yet, as they are both involved in regulating the expression of the X chromosome, it may alternatively not be surprising if there were similarities - here, we see none. Upon previous analysis with RNA-binding protein capabilities in RNAs, I have noticed that XIST and XACT share highly significant similarities in the proteins that they bind, which I would have expected would lead to greater similarity in their *k*-mer contents. Proteins tend to bind to RNAs through motifs, which are frequently short stretches along the sequence and some of which could be depicted as a 5-mer like what we analyze here. However, we see substantial differences between the most common 5-mers of these two RNAs, which leads me to believe that there might instead be regions with high density of RNA-binding motifs that are lost in the overall length of these lncRNAs. I now hope to look into this further for my continued thesis research.
 
-To first begin visualization, I want to focus on just a single motif. Let's try the ACACA motif. This dinucleotide repeat is one of the most common motifs in humans, so it may be interesting to see if this is more specific to certain RNAs.
+As for KCNQ1OT1, this transcript was particularly A-rich like XACT. This also goes against what I may have expected, as KCNQ1OT1 has repressive function similar to XIST, yet by motif KCNQ1OT1 appears more similar to the activator, XACT. NEAT1 stands out from the other RNAs as being uniquely G-rich, while the others have little if any Guanine. MALAT1 has the second highest amount of Gs, which leads me to wonder whether there would be something about their function related to speckles that prefers G-rich sequences. This would be challenging to investigate further at this time as little is known about speckles, but with new developments in the field this could be worth revisiting.
 
-![ Occurrences of the ACACA motif across the K-562 transcriptome ](figures/ACACA_motif_txptome.png)
-
-Evidently, there are quite a few RNAs that do not exhibit this particular motif at all. Let's select only those RNAs that highly express this motif.
-
-![ Occurrences of ACACA motif across K-562 transcripts which highly express the motif ](figures/ACACA_motif_expressed.png)
-
-
-Looking at these top RNAs, we may be able to learn something about the association between this motif and chromosomal positions. To split the long RNA names into more immediately useful information, we can extract the RNA name, chromosome, start and stop positions, strand, and transcript name. As this dataset also includes an unspliced version of each transcript, we can also store this information.
-
-
-We see that about ~51% of the transcripts are the unspliced version. This seems like it could be something to look into further:
-
-Only 28% of the transcriptome consists of unspliced transcripts. This indicates that there is a significant upregulation in the number of unspliced transcripts containing the ACACA motif; however, this may be an artifact of the increased length seen in the unspliced transcripts compared to the spliced versions.
-
-In a future experiment, let's see for each motif whether the unspliced transcripts appear more often than we would expect given the prevalence in the transcriptome.
-
-##*k*-mer Analysis
-
-
-
-For another investigation, let's compare a series of transcripts for the gene XIST. XIST is a lncRNA involved in repression of the entire X chromosome during early placental development of mammals. It has been well-studied by RNA biologists and is one of the lncRNAs I am most interested in.
-
-
-
-#Results
-
-The final results of the kmeans clustering analysis can be seen in Figure !!!. 
-
-
-
-
-
-
-#Discussion
-
-
-
-#Conclusion
-
-
-#References
-
-
-
-
-
-
-
-
-
-
-
-
+Overall, I believe that the negative results surrounding *k*-mer profiles may actually lend support to the idea of dense regions of similarity, hidden within the incredibly long, less functionally relevant, regions of lncRNAs. I will continue this work by pursuing that hypothesis.

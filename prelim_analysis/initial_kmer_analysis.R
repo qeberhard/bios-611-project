@@ -27,11 +27,25 @@ write.csv(expressed.kmers.txptome, file="derived_data/expressed_kmers_txptome.cs
 
 #Identify the transcripts of XIST
 XIST_rnas <- str_extract(expressed.kmers.txptome$RNA, "XIST")
+XIST_tpms <- subset(expressed.tpms, XIST_rnas == "XIST")
+
+png("figures/xist_expressed_transcripts.png")
+ggplot(data = XIST_tpms, aes(x= RNA, y = K562_averaged_total, fill = RNA)) +
+  geom_bar(stat = "identity")
+dev.off()
+
 XIST_motifs <- subset(expressed.kmers.txptome, XIST_rnas == "XIST")
 
 
 #Identify the transcript of XACT
 XACT_rnas <- str_extract(expressed.kmers.txptome$RNA, "XACT")
+XACT_tpms <- subset(expressed.tpms, XACT_rnas == "XACT")
+
+png("figures/xact_expressed_transcripts.png")
+ggplot(data = XACT_tpms, aes(x= RNA, y = K562_averaged_total, fill = RNA)) +
+  geom_bar(stat = "identity")
+dev.off()
+
 XACT_motifs <- subset(expressed.kmers.txptome, XACT_rnas == "XACT")
 
 xist <- subset(expressed.kmers.txptome, (expressed.kmers.txptome$RNA == "XIST_chrX_73820656_73852723_-_ENST00000429829.6"))
@@ -43,13 +57,46 @@ xist.sort <- sort(xist[2:1025], decreasing = TRUE)
 write.csv(xact.sort[1:10], "derived_data/top_10_xact_5mers.csv", row.names = FALSE)
 write.csv(xist.sort[1:10], "derived_data/top_10_xist_5mers.csv", row.names = FALSE)
 
+xist.plot <- t(xist.sort[1:10])
+xist.plot <- as.data.frame(xist.plot)
+xist.plot$motifs <- rownames(xist.plot)
+png("figures/xist_5mer_expression.png")
+ggplot(data = xist.plot, aes(x= motifs, y = V1, fill = motifs)) +
+  geom_bar(stat = "identity")
+dev.off()
+
+xact.plot <- t(xact.sort[1:10])
+xact.plot <- as.data.frame(xact.plot)
+xact.plot$motifs <- rownames(xact.plot)
+png("figures/xact_5mer_expression.png")
+ggplot(data = xact.plot, aes(x= motifs, y = V1, fill = motifs)) +
+  geom_bar(stat = "identity")
+dev.off()
+
+
 
 #Identify the transcript of KCNQ1OT1
 KCNQ1OT1_rnas <- str_extract(expressed.kmers.txptome$RNA, "KCNQ1OT1")
+KCNQ1OT1_tpms <- subset(expressed.tpms, KCNQ1OT1_rnas == "KCNQ1OT1")
+
+png("figures/kcnq1ot1_expressed_transcripts.png")
+ggplot(data = KCNQ1OT1_tpms, aes(x= RNA, y = K562_averaged_total, fill = RNA)) +
+  geom_bar(stat = "identity")
+dev.off()
+
 KCNQ1OT1_motifs <- subset(expressed.kmers.txptome, KCNQ1OT1_rnas == "KCNQ1OT1")
+
 kcnq1ot1 <- subset(expressed.kmers.txptome, (expressed.kmers.txptome$RNA == "KCNQ1OT1_chr11_2608328_2699994_-_ENSG00000269821.1.unspliced"))
 kcnq1ot1.sort <- sort(kcnq1ot1[2:1025], decreasing = TRUE)
 write.csv(kcnq1ot1.sort[1:10], "derived_data/top_10_kcnq1ot1_5mers.csv", row.names = FALSE)
+
+kcnq1ot1.plot <- t(kcnq1ot1.sort[1:10])
+kcnq1ot1.plot <- as.data.frame(kcnq1ot1.plot)
+kcnq1ot1.plot$motifs <- rownames(kcnq1ot1.plot)
+png("figures/kcnq1ot1_5mer_expression.png")
+ggplot(data = kcnq1ot1.plot, aes(x= motifs, y = V1, fill = motifs)) +
+  geom_bar(stat = "identity")
+dev.off()
 
 #NEAT1 and MALAT1
 NEAT1_rnas <- str_extract(expressed.kmers.txptome$RNA, "NEAT1")
@@ -63,6 +110,22 @@ malat1 <- subset(expressed.kmers.txptome, (expressed.kmers.txptome$RNA == "MALAT
 
 neat1.sort <- sort(neat1[2:1025], decreasing = TRUE)
 malat1.sort <- sort(malat1[2:1025], decreasing = TRUE)
+
+neat1.plot <- t(neat1.sort[1:10])
+neat1.plot <- as.data.frame(neat1.plot)
+neat1.plot$motifs <- rownames(neat1.plot)
+png("figures/neat1_5mer_expression.png")
+ggplot(data = neat1.plot, aes(x= motifs, y = V1, fill = motifs)) +
+  geom_bar(stat = "identity")
+dev.off()
+
+malat1.plot <- t(malat1.sort[1:10])
+malat1.plot <- as.data.frame(malat1.plot)
+malat1.plot$motifs <- rownames(malat1.plot)
+png("figures/malat1_5mer_expression.png")
+ggplot(data = malat1.plot, aes(x= motifs, y = V1, fill = motifs)) +
+  geom_bar(stat = "identity")
+dev.off()
 
 write.csv(neat1.sort[1:10], "derived_data/top_10_neat1_5mers.csv", row.names = FALSE)
 write.csv(malat1.sort[1:10], "derived_data/top_10_malat1_5mers.csv", row.names = FALSE)
